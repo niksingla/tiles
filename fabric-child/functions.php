@@ -53,21 +53,39 @@ function add_bootstrapjs(){
     ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script type="text/javascript">
+        <?php
+        global $product;
+        $price = $product->get_price();
+        $variations = $product->get_available_variations();
+        ?>
+        var prodPrice = <?= $price;?>;
         jQuery( '.variations_form' ).each( function() {
-        jQuery(this).on( 'found_variation', function( event, variation ) {
-            var price = variation.display_price;//selectedprice
-            jQuery('.price-per-box').html('$'+price)
-            //(Math.round(price/1.42 * 100) / 100).toFixed(2)
-            jQuery('.price-per-meter').html('$'+(Math.round(price/1.42 * 100) / 100).toFixed(2))
-
+            jQuery(this).on( 'found_variation', function( event, variation ) {
+                var price = variation.display_price; //selectedprice
+                prodPrice = price // Update product price
+                jQuery('.price-per-box').html('$'+price)
+                var pricePerMeter = "<?php echo esc_js(get_woocommerce_currency_symbol());?>"+(Math.round(price/1.42 * 100) / 100).toFixed(2)
+                jQuery('.price-per-meter').html(pricePerMeter)
+            });
         });
-    });
+        jQuery( document ).ready( function() {
+			setTimeout( function() {
+				jQuery('input[name=quantity]').change();
+			}, 100 );
+			jQuery(document).on('change', 'input[name=quantity]', function() { 
+                // console.log(prodPrice)
+                var totalArea = (1.42*jQuery('input[name=quantity]').val()).toFixed(2);
+                var totalPrice = prodPrice*jQuery('input[name=quantity]').val()
+                jQuery('.total-area-covered').html(totalArea+' ㎡')
+                // console.log('<span class="woocommerce-Price-currencySymbol">'+"<?php echo esc_js(get_woocommerce_currency_symbol());?>"+'</span>'+totalPrice)
+                jQuery('.single_variation .woocommerce-variation-price .price bdi').html('<span class="woocommerce-Price-currencySymbol">'+"<?php echo esc_js(get_woocommerce_currency_symbol());?>"+'</span>'+totalPrice)
+			});
+		} );
     </script>
     <?php
 }
 add_action('wp_head','add_bootstrap');
 add_action('wp_footer','add_bootstrapjs');
-
 
 
 ?>
