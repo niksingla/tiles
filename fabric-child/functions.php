@@ -44,6 +44,11 @@ function custom_price_display($price, $product) {
     return $price;
 }
 
+function tiles_scripts() {
+	wp_enqueue_script( 'tiles-custom', get_stylesheet_directory_uri() . '/custom.js', array(), '1.0.0', true );
+}
+add_action( 'wp_enqueue_scripts', 'tiles_scripts' );
+
 function add_bootstrap(){
     ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -55,10 +60,16 @@ function add_bootstrapjs(){
     <script type="text/javascript">
         <?php
         global $product;
-        $price = $product->get_price();
-        $variations = $product->get_available_variations();
+        if($product){
+            $price = $product->get_price();
+            $variations = $product->get_available_variations();
+        }
+        else{
+            $price = 0;
+        }
         ?>
-        var prodPrice = <?= $price;?>;
+        var prodPrice = <?= $price; ?> ;
+        
         jQuery( '.variations_form' ).each( function() {
             jQuery(this).on( 'found_variation', function( event, variation ) {
                 var price = variation.display_price; //selectedprice
@@ -83,6 +94,20 @@ function add_bootstrapjs(){
 		} );
     </script>
     <?php
+    if(isset($_POST) && isset($_POST['add-to-cart']) && !empty($_POST['add-to-cart'])){
+        ?>
+        <script type="text/javascript">
+            console.log('addd')
+            jQuery(document).ready(function(){
+                setTimeout(function(){
+                    console.log('addd2')
+                    jQuery('span.trx_addons_icon-basket').get(0).click()
+                }, 1000);
+            })
+        </script>
+        <?php
+    }
+
 }
 add_action('wp_head','add_bootstrap');
 add_action('wp_footer','add_bootstrapjs');
